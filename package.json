@@ -1,0 +1,14 @@
+{
+  "devDependencies": {
+    "typescript": "^5.1.6"
+  },
+  "name": "front-transac",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+"start": "tsc -w"  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
