@@ -62,6 +62,7 @@ button{
     background-color:rgb(45, 97, 159) ;
     color:aliceblue;
     font-size: 2rem;
+    cursor: pointer;
 }
 
 .hidden{
@@ -76,13 +77,15 @@ button{
     font-size: 2rem;
     font-weight: bold;
     background-color:rgb(31, 87, 156) ;
+    cursor: pointer;
 }
 .code-button{
     width:4.5rem;
     height: 3rem;
     font-size: 1rem;
     background-color:rgb(53, 135, 76) ;
-    margin-right:10px
+    margin-right:10px;
+    cursor: pointer;
 
 }
 
@@ -99,6 +102,7 @@ button{
     position: absolute;
     top: 80%;
     left: 34%;
+    cursor: pointer;
 }
 
 .history{
