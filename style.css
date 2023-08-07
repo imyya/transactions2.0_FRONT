@@ -12,18 +12,26 @@ h1{
     color: rgb(45, 97, 159);
 }
 
+.container-one{
+    margin: 0 auto;
+    width: 70vw;
+    height: 90vh;
+    transform: translateY(5%);
+    background-color: #b8c7dd;
+    box-shadow: 10px 10px 10px rgba(40, 39, 39, 0.363);
+
+}
+
 .container{
 
-    margin: 0 auto;
-    width: 45vw;
-    height: 75vh;
-    transform: translateY(15%);
+    width: 64%;
+    height: 75%;
     font-size: 1.8rem;
-    left: 25%;
+    left: 20%;
+    top: 10%;
     border: 3px solid rgba(58, 132, 230, 0.57);
-     background-color: rgb(205, 225, 243); 
+    background-color: rgb(205, 225, 243); 
     position: absolute;
-    box-shadow: 10px 10px 10px rgba(40, 39, 39, 0.363);
     /* z-index: -1;
     opacity: 0.6; */
   
@@ -79,6 +87,9 @@ button{
     background-color:rgb(31, 87, 156) ;
     cursor: pointer;
 }
+.code-span{
+    
+}
 .code-button{
     width:4.5rem;
     height: 3rem;
@@ -91,7 +102,7 @@ button{
 
 .modal{
     position: absolute;
-    left: 37%;
+    left: 40%;
     top: 40%;
     height: 30vh;
     width:20vw;
@@ -101,13 +112,13 @@ button{
 .modal-button{
     position: absolute;
     top: 80%;
-    left: 34%;
+    left: 35%;
     cursor: pointer;
 }
 
 .history{
     position: absolute;
-    left:75%;
+    left:85%;
     top:20%;
     box-shadow: 10px 10px 10px rgba(61, 60, 60, 0.689);
 }
@@ -116,6 +127,7 @@ table {
     font-family: arial, sans-serif;
     border-collapse: collapse;
     width: 100%;
+    background-color: aliceblue;
   }
   
   td, th {
@@ -127,4 +139,215 @@ table {
     background-color: #b8c7dd;
     
   }
+.cancel-button{
+    width:6rem;
+    font-size:1rem;
+    height: 1.7rem;
+}
+
+.span-x-history{
+    position: absolute;
+    right: 2%;
+    color: rgb(169, 17, 17);
+    font-size: 2rem;
+    top:-5%;
+    cursor: pointer;
+}
+
+.add-client-button, .add-account-button{
+    width:5rem;
+    height: 3rem;
+    background-color:rgb(45, 97, 159) ;
+    color:aliceblue;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.add{
+    height: 10rem;
+}
+.add >span{
+    position: relative;
+    top:4%;
+    left: 3%;
+    color: #133e6a;
+    font-size: 2rem;
+}
+
+/* The Modal */
+.add-modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0, 0, 0, 0.4); /* Black with opacity */
+  }
   
+  /* Modal Content */
+  .modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+  }
+  
+  /* Close Button */
+  .close-client-modal {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+  }
+  
+  .close-client-modal:hover,
+  .close-client-modal:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .submit-client{
+    font-size: 1rem;
+    width: 5rem;
+    height: 2rem;
+}
+
+
+
+
+/* Modal Styling */
+.add-account-modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+  
+  .add-account-modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    width: 300px; /* Adjust the width as needed */
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .add-account-modal h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 20px;
+    font-weight: bold;
+  }
+  
+  .add-account-modal label {
+    display: block;
+    margin-bottom: 10px;
+  }
+  
+  .add-account-modal input,
+  .add-account-modal select {
+    width: 100%;
+    padding: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+  }
+  
+  /* Close Button */
+  .close-account-modal, .close-client-list {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .close-account-modal:hover,
+  .close-account-modal:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  
+  /* Custom Save Account Button */
+  #save-account {
+    font-size: 1rem;
+    width: 100%;
+    padding: 5px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  #save-account:hover {
+    background-color: #0056b3;
+  }
+  
+  .client-list-modal{
+    position: absolute;
+    top: 40%;
+    left:5%;
+    height: 35vh;
+    width:45vw;
+    background-color: rgb(71, 71, 71);
+    z-index: 1;
+    display: none;
+    overflow-y: auto;
+  }
+  .list-client-button{
+    font-size: 1rem;
+    margin-left: 1.4rem;
+  }
+  .delete-button, .block-button{
+    width:4rem;
+    font-size: 1rem;
+    height: 2.5rem;
+    margin: 0.8rem;
+  }
+  .delete-button{
+    background-color: rgb(152, 45, 45);
+  }
+  .block-button{
+    background-color: #888;
+
+  }
+
+ 
+  .close-client-list:hover,
+  .close-client-list:focus {
+    color: rgb(235, 66, 66);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .close-client-list{
+    margin-right:1rem;
+  }
+
+  .list-save-button{
+    position: absolute;
+    left: 40%;
+    font-size: 2rem;
+    background-color: #306a13;
+    border-radius: 0.5rem;
+  }
+
+  .history-ok-button{
+    width: 3rem;
+    height: 2rem;
+    font-size: 1rem;
+    margin-top: 0.5rem;
+    margin-right: 0.3rem;
+  }

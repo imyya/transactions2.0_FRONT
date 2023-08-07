@@ -1,4 +1,3 @@
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,32 +7,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-//import { generateCode } from "./function";
-let container = document.querySelector('.container');
-let fournisseurSelect = document.querySelector('#fournisseur');
-let expediteurSpan = document.querySelector('#spanexpediteur');
-let transactionSpan = document.querySelector('#spantransaction');
-let destinataireSpan = document.querySelector('#spandestinataire');
-let accountNumber = document.querySelector('#ncompte');
-let nameInput = document.querySelector('#name-input');
-let recipientAcc = document.querySelector('#recipient-acc');
-let recipientName = document.querySelector('#recipient-name');
-let transactionSelect = document.querySelector('#transaction');
-let recipientDiv = document.querySelector('.destinatairediv');
-let submitButton = document.querySelector('#submit');
-let codeButton = document.querySelector('.code-button');
-let modal = document.querySelector('.modal');
-let modalButton = document.querySelector('.modal-button');
-let codeSpan = document.querySelector('.code-span');
-let infoButton = document.querySelector('.info-button');
-let historique = document.querySelector('.history');
-let montantInput = document.querySelector('#montant-input');
-let errorDiv = document.querySelector('.error');
+import { generateCode, showModal, hideModal, addClientToTable, fetchAndPopulateTable } from "./function.js";
+import { container, fournisseurSelect, expediteurSpan, transactionSpan, destinataireSpan, accountNumber, nameInput, recipientAcc, recipientName, recipientDiv, submitButton, codeButton, modal, modalButton, codeSpan, infoButton, historique, montantInput, errorDiv, cancelButton, transactionSelect, closeHistory, addClientButton, addAccountButton, addClientModal, closeClientModal, phoneNumberInput, addClientForm, addAccountModal, saveAccount, closeAccountModal, clientsModal, tableBody, clientlistButton, closeClientsList, API, saveClientList, filterInput, filterSelect, historyOKButton } from './dom.js';
+let phoneNumberRegex = /^(77|76|78|70)\d{7}$/;
+;
 errorDiv.style.color = "red";
 codeButton.disabled = true;
 let type = -1;
 let transactionValue = '';
-let clientAccId = 0;
+export let clientAccId = 0;
 let clientId = 0;
 let montant = -1;
 let fournisseur = -1;
@@ -43,25 +25,26 @@ let code = '';
 let immediate = false;
 let senderExists = false;
 let recipientExists = false;
-let TransacType = {
+let filterSelectValue = '';
+let blocked = false;
+export let TransacType = {
     0: "depot",
     1: "transfert",
     2: "retrait"
 };
-let clients = [];
+export let clients = [];
 let transactions = [];
 let coloredObject = {
     "OM": ["orange", "0"],
     "WV": ["blue", "1"],
     "WR": ["green", "2"],
     "CB": ["grey", "3"],
-    "0": ["orange"],
-    "1": ["blue"],
+    "0": ["orange", "OM"],
+    "1": ["blue", "WV"],
     "2": ["green"],
-    "3": ["grey"],
+    "3": ["grey", "CB"],
 };
 let users = [];
-const API = 'http://127.0.0.1:8000/trans-api';
 function fetchData() {
     return __awaiter(this, void 0, void 0, function* () {
         const response = yield fetch(API + '/clients/comptes');
@@ -71,7 +54,7 @@ function fetchData() {
 }
 fetchData().then((data) => {
     clients = data;
-    //console.log(clients)
+    console.log(clients);
 });
 function fetchUsers() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -84,17 +67,106 @@ fetchUsers().then((data) => {
     users = data;
     console.log('users', users);
 });
+addClientButton.addEventListener('click', () => {
+    showModal(addClientModal);
+});
+closeClientModal.addEventListener('click', () => {
+    hideModal(addClientModal);
+});
+addAccountButton.addEventListener('click', () => {
+    showModal(addAccountModal);
+});
+closeAccountModal.addEventListener('click', () => {
+    hideModal(addAccountModal);
+});
+saveAccount.addEventListener('click', () => {
+    let accountNumberInput = document.getElementById('account-tel');
+    let addAccountProviderSelect = document.getElementById('add-account-provider');
+    let accoutntInputValue = accountNumberInput.value;
+    let providerSelected = addAccountProviderSelect.value;
+    let userExists = users.find((user) => user.tel === accoutntInputValue);
+    if (!userExists) {
+        alert('Client inexistant');
+    }
+    else {
+        fetch(API + '/comptes/store', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                'client_id': userExists.id,
+                'balance': '0',
+                'provider': providerSelected
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+            console.log(data);
+        })
+            .catch(error => {
+            console.error('Une erreur est survenue:', error);
+        });
+        hideModal(addAccountModal);
+    }
+});
+addClientModal.addEventListener('submit', (event) => {
+    event.preventDefault();
+    let firstName = document.getElementById('firstName').value;
+    let lastName = document.getElementById('lastName').value;
+    let phoneNumber = phoneNumberInput.value;
+    phoneNumber = phoneNumber.replace(/\s/g, '');
+    console.log(phoneNumber);
+    if (!phoneNumberRegex.test(phoneNumber)) {
+        alert('Format invalide. Utilisez le format "XX XXX XX XX" commencant par 77 76 78 ou 70');
+    }
+    else if (clients.some((client) => client.tel === phoneNumber)) {
+        alert("Ce numero existe deja");
+    }
+    else {
+        fetch(API + '/clients/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                'firstname': firstName,
+                'lastname': lastName,
+                'tel': phoneNumber
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+            console.log(data);
+        })
+            .catch(error => {
+            console.error('Une erreur est survenue:', error);
+        });
+        addClientModal.style.display = 'none';
+        addClientForm.reset();
+    }
+});
 accountNumber.addEventListener('input', () => {
     errorDiv.innerText = '';
     let accountInput = accountNumber.value;
     let prefix = accountInput.slice(0, 2);
     // Find the client in clients array based on accountInput
     let clientMatch = clients.find((client) => client.numero_compte === accountInput);
+    if ((clientMatch === null || clientMatch === void 0 ? void 0 : clientMatch.activated) == false) {
+        // alert('Compte supprime')
+        errorDiv.textContent = 'Client supprime';
+        fournisseurSelect.disabled = true;
+        recipientAcc.disabled = true;
+        recipientName.disabled = true;
+        montantInput.disabled = true;
+        transactionSelect.disabled = true;
+    }
     if (clientMatch && prefix in coloredObject) {
         nameInput.value = clientMatch.prenom + ' ' + clientMatch.nom;
         infoButton.classList.remove('hidden');
         expediteurSpan.style.backgroundColor = coloredObject[prefix][0];
         clientAccId = clientMatch.compte_id;
+        blocked = clientMatch.blocked;
         //   fournisseurSelect.value=coloredObject[prefix][1]
         //   transactionSpan.style.backgroundColor=coloredObject[prefix][0]
         senderExists = true;
@@ -175,7 +247,7 @@ recipientAcc.addEventListener('input', () => {
             console.log(recipientAccId);
             recipientId = client.client_id;
             recipientName.value = client.prenom + ' ' + client.nom;
-            // destinataireSpan.style.backgroundColor=coloredObject[prefix][0]
+            destinataireSpan.style.backgroundColor = coloredObject[prefix][0];
             recipientExists = true;
             break;
         }
@@ -211,11 +283,27 @@ infoButton.addEventListener('click', () => {
             row.appendChild(typeCell);
             //typeCell.textContent = transaction.type.toString();
             const montantCell = document.createElement('td');
-            montantCell.textContent = transaction.montant;
+            montantCell.textContent = transaction.amount;
+            if (transaction.recipient_account_id == clientAccId) {
+                console.log('hes getting the bag');
+                montantCell.style.color = "green";
+            }
+            else if (transaction.sender_account_id == clientAccId) {
+                montantCell.style.color = "red";
+            }
             row.appendChild(montantCell);
             const dateCell = document.createElement('td');
             dateCell.textContent = transaction.date;
             row.appendChild(dateCell);
+            if (transaction.cancelled) {
+                row.style.backgroundColor = 'rgb(166, 171, 167)';
+            }
+            const recipientCell = document.createElement('td');
+            console.log('transaction recip', transaction.recipient_account_id);
+            const recip = clients.find((client) => client.compte_id == transaction.recipient_account_id);
+            console.log('le recip', recip);
+            recipientCell.textContent = (recip === null || recip === void 0 ? void 0 : recip.tel) || '';
+            row.appendChild(recipientCell);
             tableBody.appendChild(row);
         });
     })
@@ -224,15 +312,9 @@ infoButton.addEventListener('click', () => {
     });
     historique.classList.remove('hidden');
 });
-function generateCode(length) {
-    let result = '';
-    let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let charLength = characters.length;
-    for (let i = 0; i < length; i++) {
-        result += characters.charAt(Math.floor(Math.random() * charLength));
-    }
-    return result;
-}
+closeHistory.addEventListener('click', () => {
+    historique.classList.add('hidden');
+});
 submitButton.addEventListener('click', () => {
     console.log(code);
     console.log(clientAccId);
@@ -258,6 +340,8 @@ submitButton.addEventListener('click', () => {
     else if (type == 1 && code.length == 25 && recipientAccId == 0 && recipientId == 0) { //transf
         errorDiv.textContent = 'Destinataire obligatoire';
     }
+    // else if(blocked==true && type==2){
+    // }
     else if (type == 0) {
         console.log('here');
         fetchapi('depot');
@@ -267,13 +351,29 @@ submitButton.addEventListener('click', () => {
         console.log(montant, clientAccId, recipientAccId, clientId, recipientId, code, immediate);
     }
 });
-// type
-// amount
-// account_id
-// sender_id
-// recipient_id
-// code
-// immediate
+cancelButton.addEventListener('click', () => {
+    fetch(`${API}/transactions/cancel/${clientAccId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    })
+        .then(response => response.json())
+        .then((data) => {
+        if (data.Error) {
+            console.log(data.Error);
+        }
+        else {
+            console.log(data);
+        }
+    })
+        .catch((error) => {
+        console.error('An error occurred:', error.message);
+    });
+});
+filterSelect.addEventListener('change', () => {
+    console.log('transacs', transactions);
+});
 function fetchapi(method) {
     fetch(API + `/transactions/${method}`, {
         method: 'POST',
@@ -303,3 +403,40 @@ function fetchapi(method) {
         console.error('Error:', error);
     });
 }
+window.addEventListener('click', (event) => {
+    if (event.target === addClientModal) {
+        hideModal(addClientModal);
+    }
+});
+window.addEventListener('click', (event) => {
+    if (event.target === clientsModal) {
+        hideModal(clientsModal);
+    }
+});
+clientlistButton.addEventListener('click', () => {
+    clients.forEach((client) => {
+        console.log('le client', client);
+        addClientToTable(client, tableBody);
+    });
+    showModal(clientsModal);
+});
+closeClientsList.addEventListener('click', () => {
+    hideModal(clientsModal);
+});
+saveClientList.addEventListener('click', () => {
+    hideModal(clientsModal);
+});
+historyOKButton.addEventListener('click', () => {
+    let selectedFilterOption = filterSelect.value;
+    let filterValue = filterInput.value;
+    if (selectedFilterOption == "date") {
+        fetchAndPopulateTable(clientAccId, filterValue, null);
+    }
+    else if (selectedFilterOption == "amount") {
+        fetchAndPopulateTable(clientAccId, null, filterValue);
+    }
+    else {
+        alert('Pas encore gere');
+    }
+    console.log('the tings', selectedFilterOption, filterValue);
+});

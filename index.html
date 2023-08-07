@@ -4,145 +4,253 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css" crossorigin="anonymous">
-    <script type="module"src="/dist/index.js" defer></script>
+    <!-- <script>var exports = {};</script> -->
+
     
     <title>Breukh Transaction</title>
 </head>
 <body>
-    <div class="modal">
-        <div class="" style=""><span class="code-span" style="align-self: center;"></span></div>
-        <button class="modal-button">OK</button>
-    </div>
-    <div class="history hidden">
-        <table>
-            <thead>
-                <tr>
-                    <th>Type</th>
-                    <th>Montant</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            <tbody id="transaction-table">
-            </tbody>
-        </table>
-        
 
-    </div>
-    <div class="container flex flex-col center space-around">
-        
-        <h1>Breukh Transaction</h1>
-        <div class="flex" style="width: 100%;">
+   <div class="client-list-modal">
+    <span class="close-client-list">&times;</span>
 
-            <span style="text-decoration: underline; background-color: rgba(144, 151, 161, 0.636);" id="spanexpediteur">Expediteur</span>
-            <div style="flex-grow: 1; border-bottom: 0.5px solid black; "></div>        
-        </div>
-        
-
+    <table >
+        <thead>
+          <tr>
+            <th>Prenom</th>
+            <th>Nom</th>
+            <th>Tel</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="client-table">
+          <!-- Client rows will be added here dynamically -->
+        </tbody>
+    </table>
+    <button class="list-save-button">SAVE</button>
     
-        <div class="flex center space-around">
-            <div class="flex center" style="margin: 0.5rem;">
-                <div class="flex flex-col space-around">
+   </div>
 
-                    <label for="">N.Compte/Tel</label>
-                    <input type="text" id="ncompte">
-                </div>
-            </div>
-            <div class="flex center " style="margin: 0.5rem;">
-                <div class="flex flex-col space-around">
+    <div id="myModal" class="add-modal">
+        <div class="modal-content">
+          <span class="close-client-modal">&times;</span>
+          <h2>Add New Client</h2>
+          <form id="addClientForm">
+            <label for="firstName">First Name:</label>
+            <input type="text" id="firstName" required>
+      
+            <label for="lastName">Last Name:</label>
+            <input type="text" id="lastName" required>
+      
+            <label for="phone">Phone Number:</label>
+            <input type="text" id="phone" placeholder="XX XXX XX XX" required>
+      
+            <button class="submit-client" type="submit">Add Client</button>
+          </form>
+        </div>
+      </div>
 
-                    <label for="">Nom complet</label>
-                    <input type="text" id="name-input">
-                </div>
-            </div>
+      <div class="add-account-modal">
+        <div class="add-account-modal-content">
+            <span class="close-account-modal">&times;</span>
+            <h2>Ajouter un compte</h2>
+            <label for="account-tel">Numero de tel:</label>
+            <input type="text" id="account-tel" placeholder="Entrez le numéro de compte" />
+          
+            <label for="add-account-provider">Fournisseur:</label>
+            <select id="add-account-provider">
+              <option value="-1"></option>
+              <option value="OM">Orange Money</option>
+              <option value="WV">Wave</option>
+              <option value="CB">CB</option>
+            </select>
+          
+            <button id="save-account">Enregistrer</button>
+        </div>
+    </div>
+    
+   
+   
+    <div class="container-one">
+        <div class="add flex flex-col space-around">
+            <span>AJOUTER</span>
             <div>
-                <button class="info-button hidden">i</button>
-            </div>
-            
-        </div>
-        <div class="flex" style="width: 100%;">
 
-            <span style="text-decoration: underline; background-color: rgba(144, 151, 161, 0.636);" id="spantransaction" >Transaction</span>
-            <div style="flex-grow: 1; border-bottom: 0.5px solid black; "></div>        
+                <button class="add-client-button">Client</button>
+                <button class="add-account-button">Account</button>
+            </div>
+
         </div>
+        <div class="add flex flex-col space-around">
+            <span>Clients</span>
+            <div>
+
+                <button class="list-client-button">Voir Clients</button>
+            </div>
+
+        </div>
+
+        <div class="add-client">
+
+        </div>
+        <div class="create-account"></div>
+        <div class="modal">
+            <div class="code-span" style=""><span class="code-span" style="align-self: center;"></span></div>
+            <button class="modal-button">OK</button>
+        </div>
+        <div class="history hidden flex center flex-col">
+            <div class="filter-bar">
+                <select name="" id="filter-select">
+                    <option value=""></option>
+                    <option value="date">Date</option>
+                    <option value="amount">Montant</option>
+                    <option value="recipient">Numero de compte</option>
+                    <option value="tel">Telephone</option>
+                </select>
+                <div class="flex">
+
+                    <input id="filter-input" type="text" placeholder="rechercher ..">
+                    <button class="history-ok-button">ok</button>
+                </div>
+                <span class="span-x-history" >&times;</span>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Montant</th>
+                        <th>Date</th>
+                        <th>Destinataire</th>
+                    </tr>
+                </thead>
+                <tbody id="transaction-table">
+                </tbody>
+            </table>
+            <button class="cancel-button">Annuler</button>
+    
+        </div>
+        <div class="container flex flex-col center space-around">
         
-
+            <h1>Breukh Transaction</h1>
+            <div class="flex" style="width: 100%;">
     
-        <div class="flex center space-around flex-col">
-            <div class="flex center" style="margin: 15px;">
-                <div class="flex flex-col space-around">
-
-                    <label for="">Montant</label>
-                    <input id="montant-input"type="text" style="width:33rem;height:2.7 ;">
-                    <div class="error"></div>
-                </div>
-                
-            </div>
-            <div class="flex center">
-
-                <div class="flex center" style="margin: 15px;">
-                    <div class="flex flex-col space-around">
-    
-                        <label for="">Fournisseur</label>
-                        <select name="" id="fournisseur">
-                            <option value="-1"></option>
-                            <option value="0">Orange Money</option>
-                            <option value="1">Wave</option>
-                            <option value="2">Wari</option>
-                            <option value="3">CB</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="flex center" style="margin: 15px;">
-                    <div class="flex flex-col space-around">
-    
-                        <label for="">Transaction</label>
-                        <select name="" id="transaction">
-                            <option value="-1"></option>
-                            <option value="0">Depot</option>
-                            <option value="1">Transfert</option>
-                            <option value="2">Retrait</option>
-
-                        </select>
-                    </div>
-                </div>
+                <span style="text-decoration: underline; background-color: rgba(144, 151, 161, 0.636);" id="spanexpediteur">Expediteur</span>
+                <div style="flex-grow: 1; border-bottom: 0.5px solid black; "></div>        
             </div>
             
-            
-        </div>
-
-        <div class="flex" style="width: 100%;">
-
-            <span style="text-decoration: underline; background-color: rgba(144, 151, 161, 0.636);" id="spandestinataire" >Destinataire</span>
-            <div style="flex-grow: 1; border-bottom: 0.5px solid black; "></div>        
-        </div>
-        <div class="flex center space-around flex-col destinatairediv">
-            
-            <div class="flex center">
-
-                <div class="flex center" style="margin: 15px;">
-                    <div>
-                        <button class="code-button">CODE</button>
-                    </div>
+    
+        
+            <div class="flex center space-around">
+                <div class="flex center" style="margin: 0.5rem;">
                     <div class="flex flex-col space-around">
     
                         <label for="">N.Compte/Tel</label>
-                        <input type="text" id="recipient-acc">
+                        <input type="text" id="ncompte">
                     </div>
                 </div>
-                <div class="flex center" style="margin: 15px;">
+                <div class="flex center " style="margin: 0.5rem;">
                     <div class="flex flex-col space-around">
     
                         <label for="">Nom complet</label>
-                        <input type="text" id="recipient-name">
+                        <input type="text" id="name-input">
                     </div>
                 </div>
+                <div>
+                    <button class="info-button hidden">i</button>
+                </div>
+                
+            </div>
+            <div class="flex" style="width: 100%;">
+    
+                <span style="text-decoration: underline; background-color: rgba(144, 151, 161, 0.636);" id="spantransaction" >Transaction</span>
+                <div style="flex-grow: 1; border-bottom: 0.5px solid black; "></div>        
             </div>
             
-            
+    
+        
+            <div class="flex center space-around flex-col">
+                <div class="flex center" style="margin: 15px;">
+                    <div class="flex flex-col space-around">
+    
+                        <label for="">Montant</label>
+                        <input id="montant-input"type="text" style="width:33rem;height:2.7 ;">
+                        <div class="error"></div>
+                    </div>
+                    
+                </div>
+                <div class="flex center">
+    
+                    <div class="flex center" style="margin: 15px;">
+                        <div class="flex flex-col space-around">
+        
+                            <label for="">Fournisseur</label>
+                            <select name="" id="fournisseur">
+                                <option value="-1"></option>
+                                <option value="0">Orange Money</option>
+                                <option value="1">Wave</option>
+                                <option value="2">Wari</option>
+                                <option value="3">CB</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex center" style="margin: 15px;">
+                        <div class="flex flex-col space-around">
+        
+                            <label for="">Transaction</label>
+                            <select name="" id="transaction">
+                                <option value="-1"></option>
+                                <option value="0">Depot</option>
+                                <option value="1">Transfert</option>
+                                <option value="2">Retrait</option>
+    
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                
+            </div>
+    
+            <div class="flex" style="width: 100%;">
+    
+                <span style="text-decoration: underline; background-color: rgba(144, 151, 161, 0.636);" id="spandestinataire" >Destinataire</span>
+                <div style="flex-grow: 1; border-bottom: 0.5px solid black; "></div>        
+            </div>
+            <div class="flex center space-around flex-col destinatairediv">
+                
+                <div class="flex center">
+    
+                    <div class="flex center" style="margin: 15px;">
+                        <div>
+                            <button class="code-button">CODE</button>
+                        </div>
+                        <div class="flex flex-col space-around">
+        
+                            <label for="">N.Compte/Tel</label>
+                            <input type="text" id="recipient-acc">
+                        </div>
+                    </div>
+                    <div class="flex center" style="margin: 15px;">
+                        <div class="flex flex-col space-around">
+        
+                            <label for="">Nom complet</label>
+                            <input type="text" id="recipient-name">
+                        </div>
+                    </div>
+                </div>
+                
+                
+            </div>
+    
+            <button id="submit">Valider</button>
+        
         </div>
 
-        <button id="submit">Valider</button>
-    
     </div>
+    
+    <script type="module" src="./dist/index.js" defer></script>
+    <!-- <script type ="module "src="./dist/function.js"></script> -->
+
+
 </body>
 </html>

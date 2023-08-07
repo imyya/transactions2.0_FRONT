@@ -1,29 +1,18 @@
-//import { generateCode } from "./function";
-let container = document.querySelector('.container') as HTMLDivElement
-let fournisseurSelect = document.querySelector('#fournisseur') as HTMLSelectElement;
-let expediteurSpan = document.querySelector('#spanexpediteur') as HTMLSpanElement;
-let transactionSpan = document.querySelector('#spantransaction') as HTMLSpanElement;
-let destinataireSpan = document.querySelector('#spandestinataire') as HTMLSpanElement;
-let accountNumber = document.querySelector('#ncompte') as HTMLInputElement
-let nameInput = document.querySelector('#name-input') as HTMLInputElement
-let recipientAcc = document.querySelector('#recipient-acc') as HTMLInputElement
-let recipientName = document.querySelector('#recipient-name') as HTMLInputElement
-let transactionSelect = document.querySelector('#transaction') as HTMLSelectElement
-let recipientDiv = document.querySelector('.destinatairediv') as HTMLDivElement
-let submitButton = document.querySelector('#submit') as HTMLButtonElement
-let codeButton = document.querySelector('.code-button') as HTMLButtonElement
-let modal = document.querySelector('.modal') as HTMLDivElement
-let modalButton = document.querySelector('.modal-button') as HTMLButtonElement
-let codeSpan = document.querySelector('.code-span') as HTMLSpanElement
-let infoButton = document.querySelector('.info-button') as HTMLButtonElement
-let historique = document.querySelector('.history') as HTMLDivElement
-let montantInput = document.querySelector('#montant-input') as HTMLInputElement
-let errorDiv = document.querySelector('.error') as HTMLDivElement
+import { generateCode,showModal,hideModal,addClientToTable,fetchAndPopulateTable } from "./function";
+import { Transaction,Client,User } from "./types";
+import {container,fournisseurSelect,expediteurSpan,transactionSpan,destinataireSpan,accountNumber,nameInput,recipientAcc,recipientName,recipientDiv,submitButton,codeButton,modal,modalButton,codeSpan,infoButton,historique,montantInput,errorDiv,cancelButton,transactionSelect,closeHistory,addClientButton,addAccountButton,addClientModal,closeClientModal,phoneNumberInput,addClientForm,addAccountModal,saveAccount,
+ closeAccountModal, clientsModal, tableBody, clientlistButton,closeClientsList, API, saveClientList
+,filterInput,filterSelect,historyOKButton} from './dom';
+
+
+
+let phoneNumberRegex =  /^(77|76|78|70)\d{7}$/;;
+
 errorDiv.style.color="red"
 codeButton.disabled=true
 let type = -1
 let transactionValue=''
-let clientAccId=0
+export let clientAccId=0
 let clientId=0
 let montant =-1
 let fournisseur=-1
@@ -33,53 +22,36 @@ let code=''
 let immediate=false
 let senderExists=false
 let recipientExists=false
+let filterSelectValue=''
+let blocked=false
 
 
-interface Transaction{
-    id:number,
-    type:number,
-    montant:string,
-    date:string,
-    compte_id:number
-}
-interface Client{
-    client_id:number,
-    compte_id:number,
-    prenom:string,
-    nom:string,
-    tel:string,
-    numero_compte:string
-}
 
 
-let TransacType:{[key:number]:string}={
+export let TransacType:{[key:number]:string}={
     0:"depot",
     1:"transfert",
     2:"retrait"
 }
 
-let clients: Client[]=[]
+export let clients: Client[]=[]
 let transactions: Transaction[]=[]
 let coloredObject:{[key:string]:string[]} ={
     "OM":["orange","0"],
     "WV":["blue","1"],
     "WR":["green","2"],
     "CB":["grey","3"],
-    "0":["orange"],
-    "1":["blue"],
+    "0":["orange","OM"],
+    "1":["blue","WV"],
     "2":["green"],
-    "3":["grey"],
+    "3":["grey","CB"],
       
 }
 
-interface User{
-    id:number
-    firstname:string,
-    lastname:string,
-    tel:string,
-}
+
+
+
 let users:User[]=[]
-const API='http://127.0.0.1:8000/trans-api' 
 
 async function fetchData() {//users with accounts
     const response = await fetch(API+'/clients/comptes');
@@ -89,7 +61,7 @@ async function fetchData() {//users with accounts
 
 fetchData().then((data: Client[]) => {
    clients=data  
-   //console.log(clients)
+   console.log(clients)
 });
 
 async function fetchUsers() {//users with no accounts
@@ -101,10 +73,109 @@ async function fetchUsers() {//users with no accounts
 fetchUsers().then((data: User[]) => {
    users=data  
    console.log('users',users)
-});
+})
+
+
+addClientButton.addEventListener('click',()=>{
+showModal(addClientModal)
+})
+closeClientModal.addEventListener('click',()=>{
+hideModal(addClientModal)
+})
+addAccountButton.addEventListener('click',()=>{
+    showModal(addAccountModal)
+})
+
+closeAccountModal.addEventListener('click',()=>{
+    hideModal(addAccountModal)
+})
+
+saveAccount.addEventListener('click',()=>{
+let accountNumberInput = document.getElementById('account-tel') as HTMLInputElement;
+let addAccountProviderSelect = document.getElementById('add-account-provider') as HTMLSelectElement;
+let accoutntInputValue = accountNumberInput.value
+let providerSelected = addAccountProviderSelect.value
+
+let userExists=users.find((user)=>user.tel===accoutntInputValue)
+if(!userExists){
+alert('Client inexistant')
+}
+
+
+else{
+
+    fetch(API+'/comptes/store',{
+        method:'POST',
+        headers:{
+            'Content-Type':'application/json'
+        },
+        body:JSON.stringify({
+            'client_id':userExists.id,
+            'balance':'0',
+            'provider':providerSelected
+        })
+
+    })
+    .then(response => response.json())
+    .then(data => {
+     console.log(data)
+    })
+    .catch(error => {
+      console.error('Une erreur est survenue:', error)
+    });
+    hideModal(addAccountModal)
+}
 
 
 
+
+
+})
+
+addClientModal.addEventListener('submit',(event)=>{
+    event.preventDefault();
+
+  let firstName = (document.getElementById('firstName') as HTMLInputElement).value;
+  let lastName = (document.getElementById('lastName') as HTMLInputElement).value;
+  let phoneNumber = phoneNumberInput.value;
+  phoneNumber = phoneNumber.replace(/\s/g, '');
+  console.log(phoneNumber)
+
+   if (!phoneNumberRegex.test(phoneNumber)) {
+     alert('Format invalide. Utilisez le format "XX XXX XX XX" commencant par 77 76 78 ou 70');  
+   }
+
+  else if(clients.some((client)=>client.tel===phoneNumber)){
+    alert("Ce numero existe deja")
+  }
+  else{
+    fetch(API+'/clients/add',{
+        method:'POST',
+        headers:{
+            'Content-Type':'application/json'
+        },
+        body:JSON.stringify({
+            'firstname':firstName,
+            'lastname':lastName,
+            'tel':phoneNumber
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+     console.log(data)
+    })
+    .catch(error => {
+      console.error('Une erreur est survenue:', error)
+    });
+
+    addClientModal.style.display = 'none'
+    addClientForm.reset()
+  }
+  
+  
+
+
+})
 
 accountNumber.addEventListener('input', () => {
     errorDiv.innerText=''
@@ -113,7 +184,17 @@ accountNumber.addEventListener('input', () => {
   
     // Find the client in clients array based on accountInput
     let clientMatch = clients.find((client) => client.numero_compte === accountInput);
+    if(clientMatch?.activated==false){
+       // alert('Compte supprime')
+       errorDiv.textContent='Client supprime'
+       fournisseurSelect.disabled=true
+       recipientAcc.disabled=true
+       recipientName.disabled=true
+       montantInput.disabled=true
+       transactionSelect.disabled=true
 
+    }
+   
     if (clientMatch  && prefix in coloredObject) {
       nameInput.value = clientMatch.prenom + ' ' + clientMatch.nom;
 
@@ -121,6 +202,7 @@ accountNumber.addEventListener('input', () => {
       infoButton.classList.remove('hidden');
       expediteurSpan.style.backgroundColor = coloredObject[prefix][0];
       clientAccId = clientMatch.compte_id;
+      blocked=clientMatch.blocked
     //   fournisseurSelect.value=coloredObject[prefix][1]
     //   transactionSpan.style.backgroundColor=coloredObject[prefix][0]
             senderExists=true
@@ -162,6 +244,7 @@ accountNumber.addEventListener('input', () => {
         fournisseurSelect.style.color=coloredObject[selectFournisseur][0]
         transactionSpan.style.backgroundColor=coloredObject[selectFournisseur][0]
         
+        
         codeButton.disabled= !(selectFournisseur=="0" || selectFournisseur=="2" || selectFournisseur=="3")
         if(selectFournisseur=="2"){
             nameInput.disabled=true
@@ -172,6 +255,7 @@ accountNumber.addEventListener('input', () => {
             type=0
 
         }
+
     }
 
 })
@@ -214,7 +298,7 @@ recipientAcc.addEventListener('input',() => {
             console.log(recipientAccId)
             recipientId=client.client_id
             recipientName.value = client.prenom + ' ' + client.nom
-           // destinataireSpan.style.backgroundColor=coloredObject[prefix][0]
+            destinataireSpan.style.backgroundColor=coloredObject[prefix][0]
             recipientExists=true
             break
         }
@@ -254,6 +338,7 @@ infoButton.addEventListener('click', () => {
         let tableBody = document.querySelector('#transaction-table') as HTMLTableElement
         data.forEach(transaction => {
             const row = document.createElement('tr');
+        
     
             const typeCell = document.createElement('td');
             let theType : keyof typeof TransacType 
@@ -268,12 +353,32 @@ infoButton.addEventListener('click', () => {
             
     
             const montantCell = document.createElement('td');
-            montantCell.textContent = transaction.montant;
+
+            montantCell.textContent = transaction.amount;
+            
+            if(transaction.recipient_account_id==clientAccId){
+                console.log('hes getting the bag')
+                montantCell.style.color="green"
+            }
+            else if(transaction.sender_account_id == clientAccId ){
+                montantCell.style.color="red"
+
+            }
+            
             row.appendChild(montantCell);
     
             const dateCell = document.createElement('td');
             dateCell.textContent = transaction.date;
             row.appendChild(dateCell);
+            if(transaction.cancelled){
+                row.style.backgroundColor='rgb(166, 171, 167)'
+            }
+            const recipientCell = document.createElement('td')
+            console.log('transaction recip',transaction.recipient_account_id)
+            const recip = clients.find((client)=>client.compte_id==transaction.recipient_account_id)
+            console.log('le recip',recip)
+            recipientCell.textContent = recip?.tel|| '';
+            row.appendChild(recipientCell)
     
             tableBody.appendChild(row);
         });
@@ -285,6 +390,9 @@ infoButton.addEventListener('click', () => {
 
 })
 
+closeHistory.addEventListener('click',()=>{
+    historique.classList.add('hidden')
+})
   
 
 
@@ -292,17 +400,6 @@ infoButton.addEventListener('click', () => {
 
 
 
-
-function generateCode(length:number){
-    let result=''
-    let characters='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-    let charLength= characters.length
-    for(let i=0; i< length; i++){
-        result+= characters.charAt(Math.floor(Math.random()*charLength))
-
-    }
-    return result
-}
 
 
 
@@ -317,7 +414,7 @@ submitButton.addEventListener('click',() => {
     console.log('type',type)
     if( montant==-1){
     errorDiv.textContent='Le montant ne peut pas etre nul'
-   }
+}
 //    else if(senderExists==false || recipientExists==false){
 //     errorDiv.textContent='Cet client nexiste pas'
 
@@ -337,7 +434,10 @@ submitButton.addEventListener('click',() => {
     else if(type==1 && code.length==25 && recipientAccId==0 && recipientId==0 ){//transf
         errorDiv.textContent='Destinataire obligatoire'
     }
-   
+    
+    // else if(blocked==true && type==2){
+
+    // }
 
     else if(type==0){
          console.log('here')
@@ -352,15 +452,36 @@ submitButton.addEventListener('click',() => {
 
 
     }
+    
+})
+
+cancelButton.addEventListener('click',()=>{
+    fetch(`${API}/transactions/cancel/${clientAccId}`,{
+
+        method:'PUT',
+        headers:{
+            'Content-Type':'application/json'
+        },
+
+    })
+    .then(response=>response.json())
+    .then( (data:any)=>{
+        if(data.Error){
+            console.log(data.Error)
+        }
+        else{
+            console.log(data)
+        }
+    })
+    .catch((error) => {
+        console.error('An error occurred:', error.message);
+      });
+    
 })
     
-// type
-// amount
-// account_id
-// sender_id
-// recipient_id
-// code
-// immediate
+filterSelect.addEventListener('change',()=>{
+console.log('transacs',transactions)
+})
 
 function fetchapi(method:string){
     fetch(API + `/transactions/${method}`,{
@@ -395,4 +516,54 @@ function fetchapi(method:string){
         console.error('Error:', error);
     });
 }
+
+
+
+window.addEventListener('click', (event) => {
+    if (event.target === addClientModal) {
+      hideModal(addClientModal);
+    }
+  });
     
+  window.addEventListener('click', (event) => {
+    if (event.target === clientsModal) {
+      hideModal(clientsModal);
+    }
+  });
+
+clientlistButton.addEventListener('click',()=>{
+    clients.forEach((client)=>{
+        console.log('le client',client)
+        addClientToTable(client,tableBody)
+    })
+    showModal(clientsModal)  
+
+})
+
+closeClientsList.addEventListener('click',()=>{
+    hideModal(clientsModal)
+})
+
+saveClientList.addEventListener('click',()=>{
+    hideModal(clientsModal)
+
+})
+
+
+historyOKButton.addEventListener('click', () => {
+    let selectedFilterOption = filterSelect.value
+    let filterValue = filterInput.value
+    if(selectedFilterOption=="date"){
+        fetchAndPopulateTable(clientAccId,filterValue,null)
+    }
+    else if(selectedFilterOption=="amount"){
+        fetchAndPopulateTable(clientAccId,null,filterValue)
+
+    }
+    else{
+        alert('Pas encore gere')
+    }
+
+  
+   console.log('the tings',selectedFilterOption,filterValue)
+  });
