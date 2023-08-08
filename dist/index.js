@@ -7,26 +7,29 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { generateCode, showModal, hideModal, addClientToTable, fetchAndPopulateTable } from "./function.js";
-import { container, fournisseurSelect, expediteurSpan, transactionSpan, destinataireSpan, accountNumber, nameInput, recipientAcc, recipientName, recipientDiv, submitButton, codeButton, modal, modalButton, codeSpan, infoButton, historique, montantInput, errorDiv, cancelButton, transactionSelect, closeHistory, addClientButton, addAccountButton, addClientModal, closeClientModal, phoneNumberInput, addClientForm, addAccountModal, saveAccount, closeAccountModal, clientsModal, tableBody, clientlistButton, closeClientsList, API, saveClientList, filterInput, filterSelect, historyOKButton } from './dom.js';
+import { showModal, hideModal, addClientToTable, fetchAndPopulateTable, fetchapi, showCodeModal, reset } from "./function.js";
+import { container, fournisseurSelect, expediteurSpan, transactionSpan, destinataireSpan, accountNumber, nameInput, recipientAcc, recipientName, recipientDiv, submitButton, modal, modalButton, infoButton, historique, montantInput, errorDiv, cancelButton, transactionSelect, closeHistory, addClientButton, addAccountButton, addClientModal, closeClientModal, phoneNumberInput, addClientForm, addAccountModal, saveAccount, closeAccountModal, clientsModal, tableBody, clientlistButton, closeClientsList, API, saveClientList, filterInput, filterSelect, historyOKButton, retraitButton, retraitCodeInput, retraitModal, retraitProviderSelect, retraitTelInput, saveRetraitButton, closeRetraitModal, validationBox, retraitError } from './dom.js';
 let phoneNumberRegex = /^(77|76|78|70)\d{7}$/;
 ;
 errorDiv.style.color = "red";
-codeButton.disabled = true;
 let type = -1;
 let transactionValue = '';
 export let clientAccId = 0;
-let clientId = 0;
-let montant = -1;
+export let clientId = 0;
+export let montant = -1;
 let fournisseur = -1;
-let recipientAccId = 0;
-let recipientId = 0;
+export let recipientAccId = 0;
+export let recipientId = 0;
 let code = '';
-let immediate = false;
+export let immediate = false;
 let senderExists = false;
 let recipientExists = false;
 let filterSelectValue = '';
 let blocked = false;
+//retrait modal
+let retraitCode = '';
+let provider = '';
+let tel = '';
 export let TransacType = {
     0: "depot",
     1: "transfert",
@@ -201,7 +204,6 @@ fournisseurSelect.addEventListener('change', () => {
     if (selectFournisseur in coloredObject) {
         fournisseurSelect.style.color = coloredObject[selectFournisseur][0];
         transactionSpan.style.backgroundColor = coloredObject[selectFournisseur][0];
-        codeButton.disabled = !(selectFournisseur == "0" || selectFournisseur == "2" || selectFournisseur == "3");
         if (selectFournisseur == "2") {
             nameInput.disabled = true;
             accountNumber.disabled = true;
@@ -211,24 +213,6 @@ fournisseurSelect.addEventListener('change', () => {
             type = 0;
         }
     }
-});
-codeButton.addEventListener('click', () => {
-    if (fournisseur == 0) {
-        code = generateCode(25);
-    }
-    else if (fournisseur == 2) {
-        code = generateCode(15);
-    }
-    else {
-        code = generateCode(30);
-    }
-    codeSpan.style.textAlign = "center";
-    codeSpan.style.fontSize = "1.4rem";
-    codeSpan.style.color = "aliceblue";
-    codeSpan.textContent = code;
-    container.style.zIndex = '-1';
-    modal.style.zIndex = '1';
-    container.style.opacity = '0.6';
 });
 montantInput.addEventListener('input', () => {
     let amount = montantInput.value;
@@ -240,17 +224,28 @@ recipientAcc.addEventListener('input', () => {
     let prefix = recipientInput.slice(0, 2);
     console.log(prefix);
     let tel = recipientInput.slice(3);
-    for (let client of clients) {
-        if ((client.numero_compte == recipientInput && prefix in coloredObject) || client.tel == recipientInput) {
-            //console.log(client)
-            recipientAccId = client.compte_id;
-            console.log(recipientAccId);
-            recipientId = client.client_id;
-            recipientName.value = client.prenom + ' ' + client.nom;
-            destinataireSpan.style.backgroundColor = coloredObject[prefix][0];
-            recipientExists = true;
-            break;
-        }
+    let clientMatch = clients.find((client) => client.numero_compte === recipientInput);
+    if (clientMatch && prefix in coloredObject) {
+        recipientAccId = clientMatch.compte_id;
+        console.log('recip acc id', recipientAccId);
+        recipientName.value = clientMatch.prenom + ' ' + clientMatch.nom;
+        destinataireSpan.style.backgroundColor = coloredObject[prefix][0];
+        recipientExists = true;
+    }
+    let userMatch = users.find((user) => user.tel === recipientInput);
+    if (userMatch) {
+        recipientId = userMatch.id;
+        recipientName.value = userMatch.firstname + ' ' + userMatch.lastname;
+        recipientName.style.color = 'red';
+        fournisseurSelect.value = '0';
+        fournisseur = 0;
+        transactionSelect.value = '1';
+        type = 1;
+    }
+    else {
+        // Clear the input fields if no match is found
+        errorDiv.textContent = 'Client inexistant';
+        nameInput.style.color = ''; // Reset the color to default
     }
 });
 transactionSelect.addEventListener('change', () => {
@@ -264,6 +259,7 @@ modalButton.addEventListener('click', () => {
     container.style.zIndex = '1';
     modal.style.zIndex = '-1';
     container.style.opacity = '1';
+    reset();
 });
 infoButton.addEventListener('click', () => {
     console.log('cloent', clientAccId);
@@ -285,7 +281,6 @@ infoButton.addEventListener('click', () => {
             const montantCell = document.createElement('td');
             montantCell.textContent = transaction.amount;
             if (transaction.recipient_account_id == clientAccId) {
-                console.log('hes getting the bag');
                 montantCell.style.color = "green";
             }
             else if (transaction.sender_account_id == clientAccId) {
@@ -328,13 +323,13 @@ submitButton.addEventListener('click', () => {
     //    else if(senderExists==false || recipientExists==false){
     //     errorDiv.textContent='Cet client nexiste pas'
     //    }
-    else if (type == 0 && code.length > 15 && recipientAccId == 0) { //si c depot et le destinataire na ps de compte
+    else if (type == 0 && fournisseur != 2 && recipientAccId == 0) { //si c depot et le destinataire na ps de compte
         errorDiv.textContent = 'Pour les depots le destinataire doit avoir un compte';
     }
-    else if (type == 1 && code == '' && (clientAccId == 0 || recipientAccId == 0)) {
+    else if (type == 1 && fournisseur != 0 && (clientAccId == 0 || recipientAccId == 0)) {
         errorDiv.textContent = 'Compte expediteur et destinataire obligatoires'; //pr transfert sans code (ie pas OM with code) sender n recipient acc r mandatory
     }
-    else if (type == 1 && code.length == 25 && clientAccId == 0) { //transf
+    else if (type == 1 && fournisseur == 0 && clientAccId == 0) { //transf
         errorDiv.textContent = 'Compte expediteur obligatoire';
     }
     else if (type == 1 && code.length == 25 && recipientAccId == 0 && recipientId == 0) { //transf
@@ -344,11 +339,43 @@ submitButton.addEventListener('click', () => {
     // }
     else if (type == 0) {
         console.log('here');
-        fetchapi('depot');
+        fetchapi('depot')
+            .then(data => {
+            if (data && data.code) {
+                showCodeModal(data.code);
+            }
+        });
+        reset();
     }
     else if (type == 1) {
-        fetchapi('transfert');
-        console.log(montant, clientAccId, recipientAccId, clientId, recipientId, code, immediate);
+        fetchapi('transfert')
+            .then(data => {
+            if (data && data.code) {
+                showCodeModal(data.code);
+            }
+            else if (data.error) {
+                errorDiv.textContent = data.error;
+            }
+            else {
+                console.log(data);
+            }
+        });
+        reset();
+    }
+    else if (type == 2) {
+        fetchapi('retrait')
+            .then(data => {
+            if (data && data.code) {
+                showCodeModal(data.code);
+            }
+            else if (data.error) {
+                errorDiv.textContent = data.error;
+            }
+            else {
+                console.log(data);
+            }
+        });
+        reset();
     }
 });
 cancelButton.addEventListener('click', () => {
@@ -374,35 +401,6 @@ cancelButton.addEventListener('click', () => {
 filterSelect.addEventListener('change', () => {
     console.log('transacs', transactions);
 });
-function fetchapi(method) {
-    fetch(API + `/transactions/${method}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            'amount': montant,
-            'sender_account_id': clientAccId,
-            'recipient_account_id': recipientAccId,
-            'sender_id': clientId,
-            'recipient_id': recipientId,
-            'code': code,
-            'immediate': immediate
-        })
-    })
-        .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-    })
-        .then(data => {
-        // handle response data here
-    })
-        .catch(error => {
-        console.error('Error:', error);
-    });
-}
 window.addEventListener('click', (event) => {
     if (event.target === addClientModal) {
         hideModal(addClientModal);
@@ -415,7 +413,6 @@ window.addEventListener('click', (event) => {
 });
 clientlistButton.addEventListener('click', () => {
     clients.forEach((client) => {
-        console.log('le client', client);
         addClientToTable(client, tableBody);
     });
     showModal(clientsModal);
@@ -439,4 +436,63 @@ historyOKButton.addEventListener('click', () => {
         alert('Pas encore gere');
     }
     console.log('the tings', selectedFilterOption, filterValue);
+});
+retraitButton.addEventListener('click', () => {
+    showModal(retraitModal);
+});
+closeRetraitModal.addEventListener('click', () => {
+    hideModal(retraitModal);
+});
+// retraitCodeInput,retraitModal,retraitProviderSelect,
+// retraitTelInput,saveRetraitButton, closeRetraitModal
+saveRetraitButton.addEventListener('click', () => {
+    retraitError.style.color = 'red';
+    retraitCode = retraitCodeInput.value;
+    provider = retraitProviderSelect.value;
+    tel = retraitTelInput.value;
+    let index = tel.slice(0, 2);
+    console.log('the dudes', retraitCode, '**', provider, tel);
+    if (provider == '' && tel == '' && retraitCode == '') {
+        saveRetraitButton.disabled = true;
+        retraitError.innerText = 'REMPLIR LES CHAMPS';
+    }
+    else if (provider == "WR") {
+        retraitTelInput.disabled = true;
+    }
+    else if (provider == 'OM' && tel == '') {
+        retraitError.textContent = 'Veuillez saisir le numero';
+    }
+    else {
+        fetch(API + '/transactions/state', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                'code': retraitCode,
+                'tel': tel,
+                'provider': provider
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+            if (data.ok) {
+                hideModal(retraitModal);
+                validationBox.style.display = 'block';
+                setTimeout(() => {
+                    validationBox.style.display = 'none';
+                }, 2000);
+            }
+            else {
+                retraitError.textContent = data.error;
+            }
+        })
+            .catch(error => {
+            console.error('Fetch error:', error);
+        });
+    }
+    retraitCodeInput.value = '';
+    retraitProviderSelect.value = '';
+    retraitTelInput.value = '';
+    retraitError.textContent = '';
 });

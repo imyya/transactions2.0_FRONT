@@ -9,7 +9,29 @@
     
     <title>Breukh Transaction</title>
 </head>
-<body>
+<body>  
+    <div id="validationBox" >
+        <div class="checkmark"></div>
+    </div>
+    <div class="retrait-modal">
+        <div class="add-account-modal-content">
+            <span class="close-retrait-modal">&times;</span>
+            <h2>Ajouter un compte</h2>
+            <label for="retrait-account-tel">Numero de tel:</label>
+            <input type="text" id="retrait-account-tel" placeholder="Entrez le numéro de compte" />
+          
+            <label for="add-account-provider">Fournisseur:</label>
+            <select id="retrait-provider">
+              <option value="-1"></option>
+              <option value="OM">Orange Money</option>
+              <option value="WR">Wari</option>
+            </select>
+            <label for="account-tel">Code:</label>
+            <input type="text" id="retrait-code" placeholder="Entrez le code fourni" />
+             <span id="retrait-error"></span>
+            <button id="save-retrait-modal">save</button>
+        </div>
+    </div>
 
    <div class="client-list-modal">
     <span class="close-client-list">&times;</span>
@@ -48,9 +70,9 @@
             <button class="submit-client" type="submit">Add Client</button>
           </form>
         </div>
-      </div>
+    </div>
 
-      <div class="add-account-modal">
+    <div class="add-account-modal">
         <div class="add-account-modal-content">
             <span class="close-account-modal">&times;</span>
             <h2>Ajouter un compte</h2>
@@ -82,10 +104,18 @@
 
         </div>
         <div class="add flex flex-col space-around">
-            <span>Clients</span>
+            <span>CLIENTS</span>
             <div>
 
                 <button class="list-client-button">Voir Clients</button>
+            </div>
+
+        </div>
+        <div class="add flex flex-col space-around">
+            <span>RETRAIT</span>
+            <div>
+
+                <button class="retrait-button">Retrait</button>
             </div>
 
         </div>
@@ -221,9 +251,7 @@
                 <div class="flex center">
     
                     <div class="flex center" style="margin: 15px;">
-                        <div>
-                            <button class="code-button">CODE</button>
-                        </div>
+                        
                         <div class="flex flex-col space-around">
         
                             <label for="">N.Compte/Tel</label>

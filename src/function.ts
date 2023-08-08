@@ -1,6 +1,6 @@
-import {Client,Transaction} from './types'
-import {API} from './dom'
-import { clients,TransacType,clientAccId } from 'index'
+import {Client,Transaction} from './types.js'
+import {API,modal,codeSpan,container,fournisseurSelect,transactionSpan,destinataireSpan,accountNumber,nameInput,recipientAcc,recipientName,montantInput,recipientDiv,cancelButton,transactionSelect,closeHistory,addClientButton,addAccountButton,addClientModal,closeClientModal,phoneNumberInput,addClientForm,addAccountModal, errorDiv, expediteurSpan} from './dom.js'
+import { clients,TransacType,clientAccId, clientId,recipientAccId,recipientId,montant,immediate } from './index.js'
 
 export function generateCode(length:number){
     let result=''
@@ -169,3 +169,63 @@ export function addClientToTable(client:Client, tableBody: HTMLTableElement) {
         console.error('An error occurred:', error.message);
       });
   }
+  
+  export async function fetchapi(method: string) {
+    console.log('function')
+    console.log('client acc id',clientAccId )
+    console.log('client id',clientId)
+    console.log('recip acc id',recipientAccId)
+    console.log('recip id',recipientId)
+    try {
+        const response = await fetch(API + `/transactions/${method}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                'amount': montant,
+                'sender_account_id': clientAccId,
+                'recipient_account_id': recipientAccId,
+                'sender_id': clientId,
+                'recipient_id': recipientId,
+                'immediate': immediate
+            })
+        });
+
+        const data = await response.json();
+
+        if (data) {
+            return data; // Return the entire response data object
+        } else {
+            throw new Error('Response does not contain the expected data.');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        throw error;
+    }
+}
+
+export function showCodeModal(code:string){
+  codeSpan.style.textAlign="center"
+  codeSpan.style.fontSize="1.4rem"
+  codeSpan.style.color="aliceblue"
+  codeSpan.textContent= code
+  container.style.zIndex='-1'
+  modal.style.zIndex='1'
+  container.style.opacity='0.6'
+}
+
+export function reset(){
+  nameInput.value=''
+  accountNumber.value=''
+  recipientAcc.value=''
+  recipientName.value=''
+  montantInput.value=''
+  transactionSelect.value=''
+  fournisseurSelect.value=''
+  expediteurSpan.style.backgroundColor='rgba(144, 151, 161, 0.636)'
+  destinataireSpan.style.backgroundColor='rgba(144, 151, 161, 0.636)'
+  transactionSpan.style.backgroundColor='rgba(144, 151, 161, 0.636)'
+
+  //errorDiv.textContent=''
+}

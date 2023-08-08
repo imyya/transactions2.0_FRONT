@@ -222,7 +222,7 @@ table {
 
 
 /* Modal Styling */
-.add-account-modal {
+.add-account-modal, .retrait-modal{
     display: none;
     position: fixed;
     z-index: 1;
@@ -243,14 +243,14 @@ table {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
   
-  .add-account-modal h2 {
+  .add-account-modal h2, .retrait-modal h2 {
     margin-top: 0;
     margin-bottom: 20px;
     font-size: 20px;
     font-weight: bold;
   }
   
-  .add-account-modal label {
+  .add-account-modal label, .retrait-modal label{
     display: block;
     margin-bottom: 10px;
   }
@@ -265,7 +265,7 @@ table {
   }
   
   /* Close Button */
-  .close-account-modal, .close-client-list {
+  .close-account-modal, .close-client-list, .close-retrait-modal {
     color: #aaa;
     float: right;
     font-size: 28px;
@@ -281,7 +281,7 @@ table {
   }
   
   /* Custom Save Account Button */
-  #save-account {
+  #save-account, #save-retrait-modal {
     font-size: 1rem;
     width: 100%;
     padding: 5px;
@@ -291,6 +291,7 @@ table {
     border-radius: 4px;
     cursor: pointer;
   }
+  
   
   #save-account:hover {
     background-color: #0056b3;
@@ -307,7 +308,7 @@ table {
     display: none;
     overflow-y: auto;
   }
-  .list-client-button{
+  .list-client-button, .retrait-button{
     font-size: 1rem;
     margin-left: 1.4rem;
   }
@@ -351,3 +352,46 @@ table {
     margin-top: 0.5rem;
     margin-right: 0.3rem;
   }
+
+  .retrait-modal input,
+  .retrait-modal select{
+    width: 100%;
+    padding: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+  }
+
+  
+
+#validationBox {
+  position: absolute; /* Position it absolutely within the container */
+  left: 40%;
+  top: 35%;
+  background-color: #4caf50;
+  color: white;
+  padding: 10px;
+  border-radius: 50%;
+  display: none;
+  z-index: 1; /* Set a higher z-index to make it appear on top */
+  animation: slideIn 0.5s ease-in-out;
+}
+
+.checkmark {
+  width: 10rem;
+  height: 10rem;
+  border: solid white;
+  border-width: 0 30px 15px 0;
+  transform: rotate(45deg);
+  margin: 0 auto;
+}
+
+/* Animation keyframes */
+@keyframes slideIn {
+  0% {
+      transform: translateY(100%);
+  }
+  100% {
+      transform: translateY(0);
+  }
+}

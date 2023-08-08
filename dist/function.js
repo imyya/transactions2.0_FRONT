@@ -1,5 +1,14 @@
-import { API } from './dom.js';
-import { clients, TransacType } from './index.js';
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+import { API, modal, codeSpan, container, fournisseurSelect, transactionSpan, destinataireSpan, accountNumber, nameInput, recipientAcc, recipientName, montantInput, transactionSelect, expediteurSpan } from './dom.js';
+import { clients, TransacType, clientAccId, clientId, recipientAccId, recipientId, montant, immediate } from './index.js';
 export function generateCode(length) {
     let result = '';
     let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -127,4 +136,62 @@ export function fetchAndPopulateTable(clientAccId, date, amount) {
         .catch((error) => {
         console.error('An error occurred:', error.message);
     });
+}
+export function fetchapi(method) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log('function');
+        console.log('client acc id', clientAccId);
+        console.log('client id', clientId);
+        console.log('recip acc id', recipientAccId);
+        console.log('recip id', recipientId);
+        try {
+            const response = yield fetch(API + `/transactions/${method}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    'amount': montant,
+                    'sender_account_id': clientAccId,
+                    'recipient_account_id': recipientAccId,
+                    'sender_id': clientId,
+                    'recipient_id': recipientId,
+                    'immediate': immediate
+                })
+            });
+            const data = yield response.json();
+            if (data) {
+                return data; // Return the entire response data object
+            }
+            else {
+                throw new Error('Response does not contain the expected data.');
+            }
+        }
+        catch (error) {
+            console.error('Error:', error);
+            throw error;
+        }
+    });
+}
+export function showCodeModal(code) {
+    codeSpan.style.textAlign = "center";
+    codeSpan.style.fontSize = "1.4rem";
+    codeSpan.style.color = "aliceblue";
+    codeSpan.textContent = code;
+    container.style.zIndex = '-1';
+    modal.style.zIndex = '1';
+    container.style.opacity = '0.6';
+}
+export function reset() {
+    nameInput.value = '';
+    accountNumber.value = '';
+    recipientAcc.value = '';
+    recipientName.value = '';
+    montantInput.value = '';
+    transactionSelect.value = '';
+    fournisseurSelect.value = '';
+    expediteurSpan.style.backgroundColor = 'rgba(144, 151, 161, 0.636)';
+    destinataireSpan.style.backgroundColor = 'rgba(144, 151, 161, 0.636)';
+    transactionSpan.style.backgroundColor = 'rgba(144, 151, 161, 0.636)';
+    //errorDiv.textContent=''
 }
